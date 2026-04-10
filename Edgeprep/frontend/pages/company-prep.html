@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Prep - CodeApex</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+        .logo { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .company-card {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .company-card:hover { transform: translateY(-5px); background: rgba(102,126,234,0.3); }
+        .company-icon { font-size: 48px; margin-bottom: 15px; }
+        .company-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .difficulty { font-size: 14px; padding: 5px 10px; border-radius: 20px; display: inline-block; margin-top: 10px; }
+        .hard { background: #f56565; }
+        .medium { background: #ed8936; }
+        .easy { background: #48bb78; }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .topic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .topic-tag {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .edge-badge {
+            background: #28a745;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .company-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🚀 CodeApex</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="practice.html">Practice</a>
+            <a href="company-prep.html">Companies</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="edge-badge">⚡ Edge Computing Active</div>
+            <h1>🏢 Company Wise Preparation</h1>
+            <p>Select a company to get personalized preparation plan</p>
+        </div>
+
+        <div class="company-grid" id="companyGrid">
+            <!-- Companies will be loaded here -->
+        </div>
+
+        <div id="companyDetails" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        if (!localStorage.getItem('userId')) {
+            window.location.href = 'login.html';
+        }
+
+        const companies = [
+            { name: "TCS", icon: "🏢", difficulty: "Easy", topics: ["Aptitude", "Programming Logic", "English"], questions: 90, time: "90 min" },
+            { name: "Infosys", icon: "🏭", difficulty: "Medium", topics: ["Puzzles", "Logical Reasoning", "Python"], questions: 3, time: "120 min" },
+            { name: "Amazon", icon: "📦", difficulty: "Hard", topics: ["DSA", "Algorithms", "System Design"], questions: 50, time: "90 min" },
+            { name: "Microsoft", icon: "💻", difficulty: "Hard", topics: ["Problem Solving", "DSA", "Communication"], questions: 4, time: "120 min" },
+            { name: "Google", icon: "🔍", difficulty: "Very Hard", topics: ["Algorithms", "DP", "System Design"], questions: 4, time: "120 min" }
+        ];
+
+        function displayCompanies() {
+            const container = document.getElementById('companyGrid');
+            container.innerHTML = companies.map(company => `
+                <div class="company-card" onclick="showCompanyDetails('${company.name}')">
+                    <div class="company-icon">${company.icon}</div>
+                    <div class="company-name">${company.name}</div>
+                    <div class="difficulty ${company.difficulty === 'Easy' ? 'easy' : (company.difficulty === 'Medium' ? 'medium' : 'hard')}">
+                        ${company.difficulty}
+                    </div>
+                    <div class="topic-list">
+                        ${company.topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}
+                    </div>
+                    <button class="btn">Start Preparation →</button>
+                </div>
+            `).join('');
+        }
+
+        function showCompanyDetails(companyName) {
+            const company = companies.find(c => c.name === companyName);
+            const detailsDiv = document.getElementById('companyDetails');
+            
+            detailsDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <div class="card">
+                    <h2>${company.icon} ${company.name} Preparation Guide</h2>
+                    <p><strong>Difficulty:</strong> <span class="difficulty ${company.difficulty === 'Easy' ? 'easy' : (company.difficulty === 'Medium' ? 'medium' : 'hard')}">${company.difficulty}</span></p>
+                    <p><strong>Total Questions:</strong> ${company.questions}</p>
+                    <p><strong>Duration:</strong> ${company.time}</p>
+                    <h3 style="margin-top: 20px;">📚 Focus Topics:</h3>
+                    <div class="topic-list">
+                        ${company.topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}
+                    </div>
+                    <h3 style="margin-top: 20px;">📅 Recommended Study Plan:</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Week 1-2: Master ${company.topics[0]}</li>
+                        <li>Week 3-4: Focus on ${company.topics[1]}</li>
+                        <li>Week 5: Practice mock tests</li>
+                        <li>Week 6: Revision and ${company.topics[2] || 'Advanced concepts'}</li>
+                    </ul>
+                    <button class="btn" onclick="location.href='practice.html'" style="margin-top: 20px;">Start Practicing →</button>
+                    <button class="btn" onclick="document.getElementById('companyDetails').style.display='none'" style="background: #666; margin-left: 10px;">Close</button>
+                </div>
+            `;
+            
+            detailsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function logout() {
+            await fetch(`${API_URL}/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        displayCompanies();
+    </script>
+</body>
+</html>

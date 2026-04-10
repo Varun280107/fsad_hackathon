@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CodeApex</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .register-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 450px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .message {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .link {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+        }
+        .link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <h2>📝 Create Account</h2>
+        <div id="message" class="message"></div>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="fullname" placeholder="Full Name">
+        <select id="college">
+            <option value="">Select College</option>
+            <option>IIT Bombay</option>
+            <option>IIT Delhi</option>
+            <option>NIT Trichy</option>
+            <option>Other</option>
+        </select>
+        <select id="year">
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+        </select>
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <div class="link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        async function register() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const fullname = document.getElementById('fullname').value;
+
+            if (!username || !email || !password) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, full_name: fullname })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('Registration successful! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Server error. Make sure backend is running.', 'error');
+            }
+        }
+
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerText = msg;
+            msgDiv.className = `message ${type}`;
+            setTimeout(() => {
+                msgDiv.innerText = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

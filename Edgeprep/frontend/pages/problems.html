@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problems - CodeApex</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+        .logo { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        select, input {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        option { color: black; }
+        .problem-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .problem-table th, .problem-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .problem-table th { color: #667eea; }
+        .problem-title { color: white; text-decoration: none; cursor: pointer; }
+        .problem-title:hover { color: #667eea; }
+        .difficulty-easy { color: #48bb78; }
+        .difficulty-medium { color: #ed8936; }
+        .difficulty-hard { color: #f56565; }
+        .edge-badge {
+            background: #28a745;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .problem-table th, .problem-table td { padding: 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🚀 CodeApex</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="practice.html">Practice</a>
+            <a href="problems.html">Problems</a>
+            <a href="company-prep.html">Companies</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="edge-badge">⚡ Edge Computing Active</div>
+            <h1>📚 Problem Set</h1>
+            <p>Practice coding problems and track your progress</p>
+        </div>
+
+        <div class="card">
+            <div class="filters">
+                <select id="difficultyFilter">
+                    <option value="all">All Difficulties</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+                <select id="topicFilter">
+                    <option value="all">All Topics</option>
+                    <option value="Arrays">Arrays</option>
+                    <option value="Strings">Strings</option>
+                    <option value="DP">Dynamic Programming</option>
+                    <option value="Graphs">Graphs</option>
+                    <option value="Trees">Trees</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search problems..." style="flex: 1;">
+            </div>
+
+            <table class="problem-table">
+                <thead>
+                    <tr><th>Status</th><th>Title</th><th>Difficulty</th><th>Acceptance</th><th>Companies</th></tr>
+                </thead>
+                <tbody id="problemList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        if (!localStorage.getItem('userId')) window.location.href = 'login.html';
+
+        const problems = [
+            { id: 1, title: "Two Sum", difficulty: "Easy", acceptance: "75%", companies: ["Amazon", "Google"], topic: "Arrays" },
+            { id: 2, title: "Reverse String", difficulty: "Easy", acceptance: "85%", companies: ["Microsoft"], topic: "Strings" },
+            { id: 3, title: "Valid Parentheses", difficulty: "Easy", acceptance: "70%", companies: ["Amazon", "Facebook"], topic: "Strings" },
+            { id: 4, title: "Merge Two Sorted Lists", difficulty: "Easy", acceptance: "68%", companies: ["Amazon", "Microsoft"], topic: "Linked Lists" },
+            { id: 5, title: "Maximum Subarray", difficulty: "Medium", acceptance: "62%", companies: ["Google", "Amazon"], topic: "Arrays" },
+            { id: 6, title: "Longest Substring", difficulty: "Medium", acceptance: "55%", companies: ["Amazon", "Microsoft"], topic: "Strings" },
+            { id: 7, title: "Binary Tree Inorder", difficulty: "Easy", acceptance: "72%", companies: ["Google"], topic: "Trees" },
+            { id: 8, title: "Climbing Stairs", difficulty: "Easy", acceptance: "68%", companies: ["Amazon"], topic: "DP" },
+            { id: 9, title: "Coin Change", difficulty: "Medium", acceptance: "52%", companies: ["Google", "Amazon"], topic: "DP" },
+            { id: 10, title: "Course Schedule", difficulty: "Medium", acceptance: "48%", companies: ["Microsoft"], topic: "Graphs" },
+            { id: 11, title: "Merge Intervals", difficulty: "Medium", acceptance: "58%", companies: ["Google", "Amazon"], topic: "Arrays" },
+            { id: 12, title: "Word Break", difficulty: "Medium", acceptance: "45%", companies: ["Amazon"], topic: "DP" },
+            { id: 13, title: "Serialize Binary Tree", difficulty: "Hard", acceptance: "35%", companies: ["Google"], topic: "Trees" },
+            { id: 14, title: "Median of Arrays", difficulty: "Hard", acceptance: "38%", companies: ["Google", "Amazon"], topic: "Arrays" },
+            { id: 15, title: "Trapping Rain Water", difficulty: "Hard", acceptance: "42%", companies: ["Amazon", "Microsoft"], topic: "Arrays" }
+        ];
+
+        let solvedProblems = JSON.parse(localStorage.getItem('solvedProblems') || '[]');
+
+        function displayProblems() {
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const topic = document.getElementById('topicFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = problems;
+            if (difficulty !== 'all') filtered = filtered.filter(p => p.difficulty === difficulty);
+            if (topic !== 'all') filtered = filtered.filter(p => p.topic === topic);
+            if (search) filtered = filtered.filter(p => p.title.toLowerCase().includes(search));
+
+            const tbody = document.getElementById('problemList');
+            tbody.innerHTML = filtered.map(problem => `
+                <tr>
+                    <td>${solvedProblems.includes(problem.id) ? '✅' : '⬜'}</td>
+                    <td><a class="problem-title" onclick="viewProblem(${problem.id})">${problem.title}</a></td>
+                    <td class="difficulty-${problem.difficulty.toLowerCase()}">${problem.difficulty}</td>
+                    <td>${problem.acceptance}</td>
+                    <td>${problem.companies.join(', ')}</td>
+                </tr>
+            `).join('');
+        }
+
+        function viewProblem(id) {
+            const problem = problems.find(p => p.id === id);
+            alert(`📝 ${problem.title}\n\nThis is a ${problem.difficulty} problem.\n\nPractice on the Practice page!`);
+        }
+
+        document.getElementById('difficultyFilter').addEventListener('change', displayProblems);
+        document.getElementById('topicFilter').addEventListener('change', displayProblems);
+        document.getElementById('searchInput').addEventListener('input', displayProblems);
+
+        async function logout() {
+            await fetch(`${API_URL}/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        displayProblems();
+    </script>
+</body>
+</html>

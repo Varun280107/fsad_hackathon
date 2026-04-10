@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice - CodeApex</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .edge-badge {
+            background: #28a745;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+        }
+        .question-text { font-size: 18px; margin-bottom: 15px; }
+        .option {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .option:hover { background: rgba(102,126,234,0.3); }
+        .option.selected { background: #667eea; }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .warning { color: #ff6b6b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🚀 CodeApex</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="practice.html">Practice</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="edge-badge">⚡ Edge Computing Mode - Local Processing</div>
+            <div class="timer" id="timer">00:00</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <p id="progressText">0/0 questions answered</p>
+        </div>
+
+        <div id="questionsContainer"></div>
+
+        <div style="text-align: center;">
+            <button class="btn" onclick="submitTest()">🚀 Submit Test (Edge Processed)</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        if (!localStorage.getItem('userId')) window.location.href = 'login.html';
+
+        let questions = [];
+        let answers = {};
+        let timeLeft = 600; // 10 minutes
+        let timerInterval;
+
+        async function logout() {
+            await fetch(`${API_URL}/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch(`${API_URL}/questions`, { credentials: 'include' });
+                questions = await response.json();
+                displayQuestions();
+                startTimer();
+            } catch(e) {
+                document.getElementById('questionsContainer').innerHTML = '<div class="card">Error loading questions. Make sure backend is running.</div>';
+            }
+        }
+
+        function displayQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = questions.map((q, idx) => `
+                <div class="question">
+                    <div class="question-text"><strong>Q${idx + 1}.</strong> ${q.question}</div>
+                    <div>
+                        ${['A', 'B', 'C', 'D'].map((letter, optIdx) => `
+                            <div class="option" onclick="selectAnswer(${q.id}, '${letter}')" id="opt_${q.id}_${letter}">
+                                <strong>${letter}.</strong> ${q.options[optIdx]}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            updateProgress();
+        }
+
+        function selectAnswer(questionId, answer) {
+            answers[questionId] = answer;
+            ['A', 'B', 'C', 'D'].forEach(l => {
+                const el = document.getElementById(`opt_${questionId}_${l}`);
+                if (el) el.classList.remove('selected');
+            });
+            document.getElementById(`opt_${questionId}_${answer}`).classList.add('selected');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(answers).length;
+            const total = questions.length;
+            const percent = (answered / total) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').innerText = `${answered}/${total} questions answered`;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitTest();
+                }
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (timeLeft <= 60) document.getElementById('timer').classList.add('warning');
+                timeLeft--;
+            }, 1000);
+        }
+
+        async function submitTest() {
+            clearInterval(timerInterval);
+            
+            if (Object.keys(answers).length < questions.length) {
+                if (!confirm(`You've answered ${Object.keys(answers).length}/${questions.length} questions. Submit anyway?`)) {
+                    startTimer();
+                    return;
+                }
+            }
+
+            const startTime = performance.now();
+            
+            // EDGE COMPUTING: Process locally
+            let correctCount = 0;
+            for (const [qid, answer] of Object.entries(answers)) {
+                const q = questions.find(q => q.id == qid);
+                if (q && answer === q.correct_answer) correctCount++;
+            }
+            
+            const processingTime = performance.now() - startTime;
+            const score = (correctCount / questions.length) * 100;
+
+            alert(`⚡ Edge Processing Complete!\n\nScore: ${score.toFixed(1)}%\nCorrect: ${correctCount}/${questions.length}\nProcessing Time: ${processingTime.toFixed(0)}ms\n\nSaving results...`);
+
+            // Send to backend
+            try {
+                const answersArray = Object.entries(answers).map(([qid, ans]) => ({ question_id: parseInt(qid), user_answer: ans }));
+                const response = await fetch(`${API_URL}/submit-test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answers: answersArray }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                
+                localStorage.setItem('testResults', JSON.stringify({
+                    score: score,
+                    correct: correctCount,
+                    total: questions.length,
+                    processingTime: processingTime,
+                    xpEarned: result.xp_earned || 0
+                }));
+                
+                window.location.href = 'results.html';
+            } catch(e) {
+                alert('Results saved locally. Redirecting...');
+                window.location.href = 'results.html';
+            }
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html> 

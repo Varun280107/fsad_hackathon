@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - CodeApex</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .edge-badge { background: #28a745; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-bottom: 20px; }
+        .score { font-size: 72px; font-weight: bold; margin: 20px 0; }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .recommendation {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🚀 CodeApex</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="practice.html">Practice</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="edge-badge">⚡ Edge Processed Locally</div>
+            <h1>Test Results</h1>
+            <div class="score" id="score">0%</div>
+            <p id="details"></p>
+            <p id="processingTime"></p>
+            <p id="xpEarned"></p>
+            <button class="btn" onclick="location.href='practice.html'">Practice Again</button>
+            <button class="btn" onclick="location.href='dashboard.html'">Dashboard</button>
+        </div>
+
+        <div class="card">
+            <h3>📈 Recommendations</h3>
+            <div id="recommendations">
+                <p>Analyzing your performance...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        if (!localStorage.getItem('userId')) window.location.href = 'login.html';
+
+        const results = JSON.parse(localStorage.getItem('testResults'));
+        if (!results) window.location.href = 'practice.html';
+
+        document.getElementById('score').innerHTML = results.score.toFixed(1) + '%';
+        document.getElementById('details').innerHTML = `${results.correct}/${results.total} correct answers`;
+        document.getElementById('processingTime').innerHTML = `⚡ Edge Processing Time: ${results.processingTime.toFixed(0)}ms`;
+        document.getElementById('xpEarned').innerHTML = `⭐ Earned ${results.xpEarned} XP!`;
+
+        // Generate recommendations based on score
+        const recommendationsDiv = document.getElementById('recommendations');
+        if (results.score >= 80) {
+            recommendationsDiv.innerHTML = `<div class="recommendation">🎉 Excellent! You're ready for advanced topics. Try company-specific questions.</div>`;
+        } else if (results.score >= 60) {
+            recommendationsDiv.innerHTML = `<div class="recommendation">📚 Good job! Practice more to reach excellence. Focus on your weak areas.</div>`;
+        } else if (results.score >= 40) {
+            recommendationsDiv.innerHTML = `<div class="recommendation">⚠️ Need improvement. Review concepts and practice similar questions.</div>`;
+        } else {
+            recommendationsDiv.innerHTML = `<div class="recommendation">🔴 Start from basics. Watch video tutorials and solve easy questions first.</div>`;
+        }
+
+        async function logout() {
+            await fetch(`${API_URL}/logout`, { method: 'POST', credentials: 'include' });
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeApex - Master Placements</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: white;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover {
+            color: #667eea;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 5%;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #ccc;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: white;
+        }
+        .features {
+            padding: 5rem 5%;
+            background: #f8f9fa;
+        }
+        .features h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 3rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            color: #333;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .nav-links a { margin-left: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🚀 CodeApex</div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="#" onclick="window.location.href='dashboard.html'">Dashboard</a>
+            <a href="#" onclick="window.location.href='login.html'">Login</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div>
+            <h1>Master Placements<br>With Edge Computing</h1>
+            <p>500+ Problems | Mock Tests | Company Prep | Real-time Analytics</p>
+            <button class="btn btn-primary" onclick="window.location.href='register.html'">Get Started Free</button>
+            <button class="btn btn-outline" onclick="window.location.href='login.html'">Login</button>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <h2>Why Choose CodeApex?</h2>
+        <div class="feature-grid">
+            <div class="feature-card"><div class="feature-icon">⚡</div><h3>Edge Computing</h3><p>Instant results with local processing</p></div>
+            <div class="feature-card"><div class="feature-icon">🎯</div><h3>Smart Analytics</h3><p>Track weak areas & get study plans</p></div>
+            <div class="feature-card"><div class="feature-icon">🏢</div><h3>Company Prep</h3><p>TCS, Infosys, Amazon, Microsoft</p></div>
+            <div class="feature-card"><div class="feature-icon">🏆</div><h3>Gamification</h3><p>Earn XP, badges & compete</p></div>
+        </div>
+    </section>
+</body>
+</html>
